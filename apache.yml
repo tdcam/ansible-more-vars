@@ -1,0 +1,43 @@
+---
+- name: Set up web and PHP services on a host
+  hosts: web
+  vars:
+    webpkg: httpd
+    phppkg: php
+    sslpkg: mod_ssl
+    fpmpkg: php-fpm
+    websvc: httpd
+    webport: http
+    sslport: https
+  tasks:
+    - name: install packages
+      ansible.builtin.dnf:
+        name:
+          - "{{ webpkg }}"
+          - "{{ phppkg }}"
+          - "{{ fpmpkg }}"
+          - "{{ sslpkg }}"
+        state: latest
+    - name: start {{ websvc }}
+      ansible.builtin.service:
+        name: "{{ websvc }}"
+        state: started
+        enabled: true
+    - name: open {{ webport }} ports
+      ansible.posix.firewalld:
+        service: "{{ webport }}"
+        state: enabled
+        permanent: true
+        immediate: true
+    - name: open {{ sslport }}
+      ansible.posix.firewalld:
+        service: "{{ sslport }}"
+        state: enabled
+        permanent: true
+        immediate: true
+    - name: index.php is installed
+      ansible.builtin.copy:
+        src: files/info.php
+        dest: /var/www/html/info.php
+        owner: root
+        group: root
