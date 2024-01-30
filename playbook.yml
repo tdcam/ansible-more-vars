@@ -56,7 +56,7 @@
         state: latest
     - name: start {{ dbsvc }}
       ansible.builtin.service:
-        name: "{{ 
+        name: "{{ dbsvc }}"
         state: started
         enabled: true
     - name: open firewall ports for {{ dbport }}
@@ -65,4 +65,3 @@
         permanent: true
         state: enabled
         immediate: true
-
