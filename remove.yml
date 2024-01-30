@@ -1,0 +1,52 @@
+---
+- name: remove Apache httpd, php, mod_ssl, and php-fpm
+  hosts: web
+  vars:
+    webpkg: httpd
+    phppkg: php
+    sslpkg: mod_ssl
+    fpmpkg: php-fpm
+    websvc: httpd
+    webport: http
+    sslport: https
+  tasks:
+    - name: remove packages
+      ansible.builtin.dnf:
+        name:
+          - "{{ webpkg }}"
+          - "{{ phppkg }}"
+          - "{{ sslpkg }}"
+          - "{{ fpmpkg }}"
+        state: absent
+        autoremove: true
+    - name: close firewall port for {{ webport }}
+      ansible.posix.firewalld:
+        service: "{{ webport }}"
+        state: disabled
+        immediate: true
+        permanent: true
+    - name: close firewall port for {{ sslport }}
+      ansible.posix.firewalld:
+        service: "{{ sslport }}"
+        state: disabled
+        permanent: true
+        immediate: true
+
+- name: Remove MariaDB from database servers
+  hosts: db
+  vars:
+    dbpkg: mariadb-server
+    dbport: mysql
+  tasks:
+    - name: remove {{ dbpkg }}
+      ansible.builtin.dnf:
+        name: "{{ dbpkg }}"
+        state: absent
+        autoremove: true
+    - name: close {{ dbport }}
+      ansible.posix.firewalld:
+        service: "{{ dbport }}"
+        state: disabled
+        permanent: true
+        immediate: true
+
