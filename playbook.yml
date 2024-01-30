@@ -1,5 +1,5 @@
 ---
-- name: Set up web and PHP services on a host
+- name: Set up web and PHP services on web hosts
   hosts: web
   vars:
     webpkg: httpd
@@ -41,3 +41,28 @@
         dest: /var/www/html/info.php
         owner: root
         group: root
+
+- name: Set up MariaDB on the DB hosts
+  hosts: db
+  vars:
+    dbpkg: mariadb-server
+    dbsvc: mariadb
+    dbport: mysql
+  tasks:
+    - name: install {{ dbpkg }} on hosts
+      ansible.builtin.dnf:
+        name:
+          - "{{ dbpkg }}"
+        state: latest
+    - name: start {{ dbsvc }}
+      ansible.builtin.service:
+        name: "{{ 
+        state: started
+        enabled: true
+    - name: open firewall ports for {{ dbport }}
+      ansible.posix.firewalld:
+        service: "{{ dbport }}"
+        permanent: true
+        state: enabled
+        immediate: true
+
